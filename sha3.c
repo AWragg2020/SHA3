@@ -1,7 +1,6 @@
 #include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
-#include "sha3.h"
 
 /* Useful macros */
 /* Rotate a 64b word to the left by n positions */
