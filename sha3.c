@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Useful macros */
 /* Rotate a 64b word to the left by n positions */
 #define ROL64(a, n) ((((n)%64) != 0) ? ((((uint64_t)a) << ((n)%64)) ^ (((uint64_t)a) >> (64-((n)%64)))) : a)
 
@@ -37,7 +36,6 @@ StateArray theta(StateArray A);
 
 /*
  *Declaration of the global variables offsets and RC:
- *Both provided in the file KeccakF-1600-IntermediateValues.txt
  */
 int offsets[5][5]={{0,36,3,41,18},{1,44,10,45,2},{62,6,43,15,61},{28,55,25,21,56},{27,20,39,8,14}};
 uint64_t RC[24] = {
@@ -81,8 +79,6 @@ void sha3(unsigned char *d, unsigned int s, const unsigned char *m,
 	/* The hash size must be one of the supported ones */
 	if (s != 224 && s != 256 && s != 384 && s != 512)
 		return;
-
-	/* Implement the rest of this function */
 
 	//Concatenate 01 to the original message
 	unsigned char *N=NULL;
@@ -128,9 +124,8 @@ void sha3(unsigned char *d, unsigned int s, const unsigned char *m,
 	unsigned char *Pi_conc_zeroes=calloc(b/8,sizeof(unsigned char));
 	unsigned char *S_xor=calloc(b/8,sizeof(unsigned char));
 	unsigned int index2;
-	//printf("%d",n);
 	for(i=0; i<n; i++){
-		//Here we obtain Pi || 0^c
+		// obtain Pi || 0^c
 		concatenate(&Pi_conc_zeroes,Pi[i],r,zeroes,c);
 
 		// S xor (Pi || 0^c)
@@ -141,8 +136,6 @@ void sha3(unsigned char *d, unsigned int s, const unsigned char *m,
 		S=keccak_p(S_xor, 1600, 24);
 	}
 
-	//7. 8. 9. can really be compressed in a single action due to the fact that the input
-	//is always going to be bigger than the fixed output length
 	memcpy(d,S,s/8);
 }
 
@@ -214,7 +207,6 @@ unsigned long concatenate_01(unsigned char **Z, const unsigned char *X,
 {
 	/* Due to the SHA-3 bit string representation convention, the 01
 	 * bit string is represented in hexadecimal as 0x02.
-	 * See Appendix B.1 of the Standard.
 	 */
 	unsigned char zeroone[] = { 0x02 };
 	return concatenate(Z, X, X_len, zeroone, 2);
@@ -328,8 +320,8 @@ unsigned char *keccak_p(unsigned char *S, unsigned int b, unsigned int nr){
 	}
 
 	//3. Convert A into S' of length 1600
-	//First I do allocate a string of length b/8 because that's what is going to be returned
-	//and a uint64_t of the same length because ethat's what I'm going to work with
+	//First, allocate a string of length b/8 because that's what is going to be returned
+	//and a uint64_t of the same length because ethat's what's being worked with
 	unsigned char *S2=calloc(b/8,sizeof(unsigned char));
 	uint64_t *state2=calloc(b/8,sizeof(unsigned char));
 
@@ -340,7 +332,7 @@ unsigned char *keccak_p(unsigned char *S, unsigned int b, unsigned int nr){
 		}
 	}
 
-	//This way, I assign S2, the return value, the value of the string obtained from the state array
+	//assign to S2, the return value, the value of the string obtained from the state array
 	S2=(unsigned char  *)state2;
 
 	//4. Return S'
@@ -353,7 +345,7 @@ StateArray Rnd(StateArray A, unsigned int ir){
 }
 
 StateArray iota(StateArray A, unsigned int ir){
-	//1. For all triplets (x,y,z), let A'[x,y,z] = A[x,y,z]
+	// For all triplets (x,y,z), let A'[x,y,z] = A[x,y,z]
 	StateArray A2;
 	int x,y;
 	for(x=0; x<5; x++){
@@ -362,23 +354,20 @@ StateArray iota(StateArray A, unsigned int ir){
 		}
 	}
 
-	//2. Let RC=0^w
-	//Not required since RC is already defined
-
-	//3. For j from 0 to l, let RC[(2^j)-1]=rc(j+7*ir)
+	// For j from 0 to l, let RC[(2^j)-1]=rc(j+7*ir)
 	//Unnecessary since all RC values are already defined as a global variable
 
-	//4. For all z, let A'[0,0,z]=A'[0,0,z] xor RC[z]
+	// For all z, let A'[0,0,z]=A'[0,0,z] xor RC[z]
 	//Done this way because of the declaration of RC
 	A2.array[0][0]^=RC[ir];
 
-	//5. Return A'
+	// Return A'
 	return A2;
 }
 
 StateArray xi(StateArray A){
-	//1. For all triples (x,y,z) let A'[x,y,z]=A[x,y,z] xor ((A[(x+1) mod 5, y,z] xor 1) & A[(x+2) mode 5, y,z])
-	//Obtaining the 64 bits with 1
+	// For all triples (x,y,z) let A'[x,y,z]=A[x,y,z] xor ((A[(x+1) mod 5, y,z] xor 1) & A[(x+2) mode 5, y,z])
+	// Obtaining the 64 bits with 1
 	uint64_t one=0;
 	one=~one;
 	//Rest of the algorithm, self explanatory
@@ -390,12 +379,12 @@ StateArray xi(StateArray A){
 		}
 	}
 
-	//2. Retrurn A'
+	// Retrurn A'
 	return A2;
 }
 
 StateArray pi(StateArray A){
-	//1. For all triplets (x,y,z), let A'[x,y,z]=A[(x+3y)mod5,x,z]
+	// For all triplets (x,y,z), let A'[x,y,z]=A[(x+3y)mod5,x,z]
 	StateArray A2;
 	int x,y;
 	for(x=0; x<5; x++){
@@ -404,12 +393,12 @@ StateArray pi(StateArray A){
 		}
 	}
 
-	//2. Return A'
+	// Return A'
 	return A2;
 }
 
 StateArray ro(StateArray A){
-	//1. For all z let A'[0,0,z]=A[0,0,z]
+	// For all z let A'[0,0,z]=A[0,0,z]
 	StateArray A2;
 	A2.array[0][0]=A.array[0][0];
 
@@ -422,28 +411,28 @@ StateArray ro(StateArray A){
 		y=(2*aux+3*y)%5;
 	}
 
-	//4. Return A'
+	// Return A'
 	return A2;
 }
 
 StateArray theta(StateArray A){
 	StateArray A2;
-	//1. For all pairs (x,z) let C[x,z]=A[x,0,z] xor A[x,1,z] xor A[x,2,z] xor A[x,3,z] xor A[x,4,z]
+	// For all pairs (x,z) let C[x,z]=A[x,0,z] xor A[x,1,z] xor A[x,2,z] xor A[x,3,z] xor A[x,4,z]
 	uint64_t C[5];
 	int x,y;
 	for(x=0; x<5; x++){
 		C[x]=A.array[x][0]^A.array[x][1]^A.array[x][2]^A.array[x][3]^A.array[x][4];
 	}
 
-	//2. For all pairs (x,z) let D[x,z]=C[(x-1)mod 5,z] xor C[(x+1)mod 5,(z-1)mod w]
+	// For all pairs (x,z) let D[x,z]=C[(x-1)mod 5,z] xor C[(x+1)mod 5,(z-1)mod w]
 	uint64_t D[5];
 	for(x=0; x<5; x++){
-		//This one requires some explanation. The fact that I chose to call to C[(x+4)%5] instead of C[(x-1)%5]
-				//is because x starts from 0, thus giving C[-1] in the first iteration, making no sense at all
+		//This one requires some explanation. The fact that C[(x+4)%5] is called instead of C[(x-1)%5]
+		//is because x starts from 0, thus giving C[-1] in the first iteration, making no sense at all
 		D[x]=C[(x+4)%5]^ROL64(C[(x+1)%5],1);
 	}
 
-	//3. For all triples (x,y,z) let A'[x,y,z]=A[x,y,z] xor D[x,z]
+	//For all triples (x,y,z) let A'[x,y,z]=A[x,y,z] xor D[x,z]
 	for(x=0; x<5; x++){
 		for(y=0; y<5; y++){
 			A2.array[x][y]=A.array[x][y]^D[x];
